@@ -110,10 +110,10 @@ const MOCK_HISTORY = [
 const SUPABASE_URL = 'https://soonmrhsedfywqodjwjq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNvb25tcmhzZWRmeXdxb2Rqd2pxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzNjk0NzksImV4cCI6MjA5MTk0NTQ3OX0.xEZuchbfoGDnqZfzgKqM2izJVaGC7rsA7iA6juPH04k';
 
-let supabase = null;
+let supabaseClient = null;
 try {
     if (window.supabase) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     } else {
         console.warn("Supabase library not found on window object.");
     }
@@ -122,7 +122,7 @@ try {
 }
 
 async function fetchOrdersFromSupabase() {
-    if (!supabase) {
+    if (!supabaseClient) {
         console.log("Supabase client not initialized, using mock data...");
         renderOrders(MOCK_ORDERS);
         renderHistory(MOCK_HISTORY);
@@ -132,7 +132,7 @@ async function fetchOrdersFromSupabase() {
     console.log("Fetching orders from Supabase...");
     
     // We try to fetch all columns from orders, and the nested items
-    const { data: dbOrders, error } = await supabase
+    const { data: dbOrders, error } = await supabaseClient
         .from('orders')
         .select(`*, items:order_items(*)`)
         .order('created_at', { ascending: false });
