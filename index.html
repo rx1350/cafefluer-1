@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Café Fleur Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <!-- Login View -->
+    <div id="login-view" class="login-view">
+        <div class="login-card">
+            <div class="logo-box login-logo">CF</div>
+            <h2>Café Fleur</h2>
+            <p>CONSERVATORY TERMINAL</p>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label>ADMIN EMAIL</label>
+                    <input type="email" id="login-email" placeholder="admin@cafefleur.com" required>
+                </div>
+                <div class="form-group">
+                    <label>PASSWORD</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary w-100">ACCESS TERMINAL</button>
+                <p id="login-error" class="error-msg" style="display: none;">Invalid credentials</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard View -->
+    <div class="dashboard-container" id="dashboard-view" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo-box">CF</div>
+                <div class="brand-text">
+                    <h1>Café Fleur</h1>
+                    <p>ADMIN DASHBOARD</p>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" id="nav-live">
+                    <i data-lucide="layout-grid"></i>
+                    <span>Live Orders</span>
+                </a>
+                <a href="#" class="nav-item" id="nav-history">
+                    <i data-lucide="clock"></i>
+                    <span>Order History</span>
+                </a>
+                <a href="#" class="nav-item" id="nav-settings">
+                    <i data-lucide="settings"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="user-profile">
+                <img src="https://i.pravatar.cc/150?img=11" alt="Alex Mercer" class="avatar">
+                <div class="user-info">
+                    <p class="user-name">Alex Mercer</p>
+                    <p class="user-role">General Manager</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-titles">
+                    <h2 id="main-page-title">Conservatory Dashboard</h2>
+                </div>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <i data-lucide="search"></i>
+                        <input type="text" placeholder="Search room or order...">
+                    </div>
+                    <button class="icon-btn"><i data-lucide="bell"></i></button>
+                    <button class="icon-btn"><i data-lucide="settings-2"></i></button>
+                </div>
+            </header>
+
+            <section class="live-orders-section" id="section-live">
+                <div class="section-header">
+                    <div class="section-title">
+                        <h3>Live Orders</h3>
+                        <p>Today &middot; <span id="active-orders-count">0</span> active orders</p>
+                    </div>
+                    <div class="status-summary">
+                        <span class="summary-badge new">&bull; NEW: <span id="count-new">0</span></span>
+                        <span class="summary-badge preparing">&bull; PREPARING: <span id="count-preparing">0</span></span>
+                        <span class="summary-badge ready">&bull; READY: <span id="count-ready">0</span></span>
+                        <span class="summary-badge done">&bull; DONE: <span id="count-done">0</span></span>
+                    </div>
+                </div>
+
+                <div class="orders-grid" id="orders-container">
+                    <!-- Order Cards will be injected here by JS -->
+                </div>
+            </section>
+
+            <!-- Order History Section -->
+            <section class="order-history-section" id="section-history" style="display: none;">
+                <div class="history-header">
+                    <div class="history-title">
+                        <h3>Order History</h3>
+                        <p>PAST 30 DAYS OF BOTANICAL SERVICE</p>
+                    </div>
+                    <div class="history-actions">
+                        <button class="filter-btn">DATE RANGE <i data-lucide="chevron-down"></i></button>
+                        <button class="export-btn"><i data-lucide="download"></i> EXPORT CSV</button>
+                    </div>
+                </div>
+
+                <div class="history-table-card">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>ORDER ID</th>
+                                <th>ROOM</th>
+                                <th>DATE & TIME</th>
+                                <th>ITEMS</th>
+                                <th>TOTAL</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body">
+                            <!-- History rows injected here -->
+                        </tbody>
+                    </table>
+                    <div class="table-footer">
+                        <span class="pagination-info">SHOWING 1-5 OF 123 ORDERS</span>
+                        <div class="pagination-controls">
+                            <button class="page-btn"><i data-lucide="chevron-left"></i></button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn">2</button>
+                            <button class="page-btn"><i data-lucide="chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i data-lucide="file-text"></i></div>
+                        <div class="stat-content">
+                            <p class="stat-label">Monthly Revenue</p>
+                            <h4 class="stat-value">$14,280.50</h4>
+                            <p class="stat-subtext positive">+12% FROM LAST PERIOD</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i data-lucide="shopping-bag"></i></div>
+                        <div class="stat-content">
+                            <p class="stat-label">Total Orders</p>
+                            <h4 class="stat-value">1,422</h4>
+                            <p class="stat-subtext">PROCESSED SUCCESSFULLY</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i data-lucide="moon"></i></div>
+                        <div class="stat-content">
+                            <p class="stat-label">Top Room</p>
+                            <h4 class="stat-value">Fern Gallery</h4>
+                            <p class="stat-subtext">+42 VISITS THIS MONTH</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section class="settings-section" id="section-settings" style="display: none;">
+                <div class="settings-header">
+                    <p class="settings-subtitle">SYSTEM ADMINISTRATION</p>
+                    <h3>Settings</h3>
+                    <p class="settings-desc">Configure your conservatory terminal and manage administrative preferences.</p>
+                </div>
+
+                <div class="settings-layout">
+                    <div class="settings-top-row">
+                        <div class="settings-card general-card">
+                            <div class="card-header">
+                                <i data-lucide="info"></i> <h4>General</h4>
+                            </div>
+                            <div class="form-group">
+                                <label>CAFE NAME</label>
+                                <input type="text" value="Café Fleur">
+                            </div>
+                            <div class="form-group">
+                                <label>ADMIN EMAIL</label>
+                                <input type="email" id="settings-email" value="admin@cafefleur.com">
+                            </div>
+                            <div class="form-group">
+                                <label>CURRENCY</label>
+                                <select>
+                                    <option>Indian Rupee (INR)</option>
+                                    <option>US Dollar (USD)</option>
+                                    <option>Euro (EUR)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="settings-right-col">
+                            <div class="settings-card notif-card">
+                                <div class="card-header">
+                                    <i data-lucide="bell"></i> <h4>Notifications</h4>
+                                </div>
+                                <div class="notif-item">
+                                    <div class="notif-text">
+                                        <h5>Sound Alerts</h5>
+                                        <p>Play a chime when new orders arrive</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                                <div class="notif-item">
+                                    <div class="notif-text">
+                                        <h5>Desktop Notifications</h5>
+                                        <p>Show browser alerts for system updates</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="yellow-banner">
+                                <p>Cultivating excellence in every bloom.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-card security-card">
+                        <div class="card-header">
+                            <i data-lucide="shield"></i> <h4>Security</h4>
+                        </div>
+                        <div class="security-content">
+                            <div class="access-control">
+                                <label>ACCESS CONTROL</label>
+                                <button class="btn-outline" id="change-pwd-btn"><i data-lucide="refresh-cw"></i> Change Password</button>
+                            </div>
+                            <div class="two-factor-box">
+                                <div class="tf-text">
+                                    <h5>Two-Factor Authentication</h5>
+                                    <p>Add an extra layer of security to your conservatory</p>
+                                </div>
+                                <label class="switch">
+                                    <!-- 2FA Disabled per requirements -->
+                                    <input type="checkbox" disabled>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-actions">
+                    <button class="btn-text">Discard Changes</button>
+                    <button class="btn-primary" id="save-settings-btn">SAVE CHANGES</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Template for an Order Card -->
+    <template id="order-card-template">
+        <article class="order-card">
+            <div class="card-header">
+                <h4 class="room-number"></h4>
+                <span class="status-badge"></span>
+            </div>
+            <p class="time-ago"></p>
+
+            <ul class="order-items">
+                <!-- Items injected here -->
+            </ul>
+
+            <div class="card-footer">
+                <div class="total-row">
+                    <span>TOTAL</span>
+                    <span class="total-amount"></span>
+                </div>
+                <button class="action-btn"></button>
+            </div>
+        </article>
+    </template>
+
+    <!-- Template for Order Item -->
+    <template id="order-item-template">
+        <li class="order-item">
+            <div class="item-details">
+                <p class="item-name"></p>
+                <p class="item-qty"></p>
+            </div>
+            <p class="item-price"></p>
+        </li>
+    </template>
+
+    <!-- Template for History Table Row -->
+    <template id="history-row-template">
+        <tr class="history-row">
+            <td class="col-id"></td>
+            <td class="col-room"><span class="room-dot"></span><span class="room-name"></span></td>
+            <td class="col-date"></td>
+            <td class="col-items"></td>
+            <td class="col-total"></td>
+            <td class="col-status"><span class="badge"></span></td>
+        </tr>
+    </template>
+
+    <script src="app.js"></script>
+</body>
+</html>
